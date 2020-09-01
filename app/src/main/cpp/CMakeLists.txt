@@ -17,7 +17,16 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             native-lib.cpp )
+             native-lib.cpp AudioEngine.cpp )
+
+# Set the path to the Oboe directory
+set (OBOE_DIR /Users/claybailey/Library/Android/oboe)
+
+# Add the Oboe library as a subdirectory in your project.
+add_subdirectory(${OBOE_DIR} ./oboe)
+
+# Specify the path to the Oboe header files
+include_directories(${OBOE_DIR}/include)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -41,4 +50,7 @@ target_link_libraries( # Specifies the target library.
 
                        # Links the target library to the log library
                        # included in the NDK.
-                       ${log-lib} )
+                       ${log-lib}
+
+                        #Link Oboe
+                        oboe )
