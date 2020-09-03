@@ -17,7 +17,7 @@ add_library( # Sets the name of the library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             native-lib.cpp AudioEngine.cpp )
+             native-lib.cpp AudioEngine.cpp)
 
 # Set the path to the Oboe directory
 set (OBOE_DIR /Users/claybailey/Library/Android/oboe)
