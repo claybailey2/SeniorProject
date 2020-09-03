@@ -6,6 +6,7 @@
  * JNI CODE LIVES HERE
  */
 
+AudioEngine engine;
 
 /*
  * Example JNI function loaded in with native C++ app template
@@ -21,26 +22,33 @@ Java_blog_claybailey_seniorproject_MainActivity_stringFromJNI(//notice naming co
 
 //Start AudioEngine
 extern "C"
-JNIEXPORT jlong JNICALL
+JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_startEngine(JNIEnv *env, jobject thiz) {
-    AudioEngine *engine = new AudioEngine();
-    return reinterpret_cast<jlong>(engine);
+    engine.start();
 }
 
 //Stop AudioEngine
 extern "C"
 JNIEXPORT void JNICALL
-Java_blog_claybailey_seniorproject_MainActivity_stopEngine(JNIEnv *env, jobject thiz,
-                                                           jlong engine_handle) {
-    AudioEngine *engine = reinterpret_cast<AudioEngine *>(engine_handle);
-    delete engine;
+Java_blog_claybailey_seniorproject_MainActivity_stopEngine(JNIEnv *env, jobject thiz) {
+    //TODO
 }
 
 //Handle tap event
 extern "C"
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_tap(JNIEnv *env, jobject thiz,
-                                                    jlong engineHandle, jboolean b) {
-    auto engine = reinterpret_cast<AudioEngine *>(engineHandle);
-    engine->tap(b);
+                                                    jboolean b) {
+    engine.tap(b);
+}
+
+//update default stream values for hardware
+extern "C"
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
+                                                                               jclass thiz,
+                                                                               jint sample_rate,
+                                                                               jint frames_per_burst) {
+    oboe::DefaultStreamValues::SampleRate = (int32_t) sample_rate;
+    oboe::DefaultStreamValues::FramesPerBurst = (int32_t) frames_per_burst;
 }
