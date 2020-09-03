@@ -21,9 +21,32 @@ public:
         UpdatePhaseIncrement();
     }
 
+    //from "Low Latency Audio: Because Your Ears Are Worth It (Android Dev Summit '18)
+    void renderAudio(float *audioData,int32_t numFrames){
+        if(mIsWaveOn){
+            for (int i = 0; i < numFrames; i++) {
+                //square wave
+                if (mPhase <= kPi){
+                    audioData[i] = -mAmplitude;
+                } else {
+                    audioData[i] = mAmplitude;
+                }
 
+                mPhase += mPhaseIncrement;
+                //reset phase
+                if(mPhase > kTwoPi) mPhase -= kTwoPi;
+            }
+        } else {
+            memset(audioData, 0, sizeof(float) * numFrames);
+        }
+    };
+
+    void SetWaveOn(bool isDown) {
+        mIsWaveOn = isDown;
+    }
 
 private:
+    bool mIsWaveOn {false};
     double mFrequency = kDefaultFrequency;
     int32_t mSampleRate = kDefaultSampleRate;
     float mAmplitude = 0.5;

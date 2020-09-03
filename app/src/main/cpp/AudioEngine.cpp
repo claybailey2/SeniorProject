@@ -2,7 +2,6 @@
 // Created by Clay Bailey on 2020/08/31.
 //
 #include "AudioEngine.h"
-#include "Oscillator.h"
 
 void AudioEngine::start() {
     AudioStreamBuilder builder;
@@ -18,6 +17,9 @@ void AudioEngine::start() {
     //interrogate audio device for minimum amount of data it will read in one operation (burst)
     //use two bursts to prevent underruns
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
+
+    //create oscillator with sample rate from stream
+    mOsc = new Oscillator(80.0, mStream->getSampleRate());
 
     mStream->requestStart();
 }
@@ -37,5 +39,10 @@ void AudioEngine::start() {
  */
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    return Stop;
+    mOsc->renderAudio(static_cast<float *>(audioData), numFrames);
+    return DataCallbackResult::Continue;
+}
+
+void AudioEngine::tap(bool isDown) {
+    mOsc->SetWaveOn(isDown);
 }

@@ -8,6 +8,7 @@
 // AudioEngine.h
 
 #include <oboe/Oboe.h>
+#include "Oscillator.h"
 
 using namespace oboe;
 //AudioEngine inherits from AudioStreamCallback
@@ -19,6 +20,9 @@ public:
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
     AudioStream *mStream;
+    Oscillator *mOsc;
+
+    void tap(bool isDown);
 };
 
 #endif //SENIOR_PROJECT_AUDIOENGINE_H
