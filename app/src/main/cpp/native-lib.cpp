@@ -1,5 +1,7 @@
 #include <jni.h>
 #include <string>
+#include <sstream>
+#include <thread>
 #include "AudioEngine.h"
 
 /*
@@ -15,7 +17,11 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_stringFromJNI(//notice naming convention
         JNIEnv* env,//pointer to pointer to function table
         jobject /* this */) {
-    std::string hello = "Hello from C++";
+    unsigned int nCores = std::thread::hardware_concurrency();
+    std::ostringstream helloStream;
+    helloStream << "This hardware supports concurrency with "
+            << nCores << " cores available.";
+    std::string hello = helloStream.str();
     //Constructs a new java.lang.String object from an array of characters in modified UTF-8 encoding.
     return env->NewStringUTF(hello.c_str());
 }
