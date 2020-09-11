@@ -19,7 +19,7 @@ void AudioEngine::start() {
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
 
     //create oscillator with sample rate from stream
-    mOsc = new Oscillator(80.0, mStream->getSampleRate());
+    mKick = new KickDrum(80.0, 0.5, mStream->getSampleRate());
 
     mStream->requestStart();
 }
@@ -39,10 +39,16 @@ void AudioEngine::start() {
  */
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    mOsc->renderAudio(static_cast<float *>(audioData), numFrames);
+    mKick->renderAudio(static_cast<float *>(audioData), numFrames);
     return DataCallbackResult::Continue;
 }
 
+int32_t AudioEngine::getBufferSize() {
+    if (mStream != nullptr) {
+        return mStream->getFramesPerBurst() * 2;
+    } else return 512;
+}
+
 void AudioEngine::tap(bool isDown) {
-    mOsc->SetWaveOn(isDown);
+    mKick->tap(isDown);
 }

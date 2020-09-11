@@ -8,7 +8,13 @@
 // AudioEngine.h
 
 #include <oboe/Oboe.h>
-#include "Oscillator.h"
+
+#include "SquareOsc.h"
+#include "NoiseOsc.h"
+#include "Mixer.h"
+#include "Envelope.h"
+
+#include "KickDrum.h"
 
 using namespace oboe;
 //AudioEngine inherits from AudioStreamCallback
@@ -19,10 +25,14 @@ public:
     DataCallbackResult
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
 
-    AudioStream *mStream;
-    Oscillator *mOsc;
+    int32_t getBufferSize();
 
     void tap(bool isDown);
+
+private:
+    AudioStream *mStream;
+    KickDrum *mKick;
+
 };
 
 #endif //SENIOR_PROJECT_AUDIOENGINE_H
