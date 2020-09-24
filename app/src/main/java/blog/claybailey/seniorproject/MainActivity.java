@@ -3,11 +3,14 @@ package blog.claybailey.seniorproject;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
-import android.widget.TextView;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MainActivity extends AppCompatActivity {
     /**
@@ -16,12 +19,12 @@ public class MainActivity extends AppCompatActivity {
      */
 
     //declare native functions HERE
+    private static long mEngineHandle = 0;
 
-    public native String stringFromJNI();//example
-
-    private native void startEngine();
-    private native void stopEngine();
-    private native void tap(boolean b);
+    private native long startEngine();
+    private native void stopEngine(long engineHandle);
+    private native void resumeEngine(long engineHandle);
+    private native void tap(long engineHandle, boolean b);
 
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 
@@ -34,11 +37,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
-
-        // Example of a call to a native method
-        TextView tv = findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());//changes text from "Hello World" to "Hello from C++"
 
         //Configure app to hardware-specific audio output settings
         setDefaultStreamValues(this);
@@ -47,26 +47,33 @@ public class MainActivity extends AppCompatActivity {
     //Start the audio engine when app in focus
     @Override
     protected void onResume() {
-        startEngine();
+        if (mEngineHandle != 0) resumeEngine(mEngineHandle);
         super.onResume();
     }
 
     //Stop the audio when app is out of focus
     @Override
     protected void onPause() {
-        stopEngine();
+        stopEngine(mEngineHandle);
         super.onPause();
     }
 
     //logic to handle screen taps.
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(event.getAction() == MotionEvent.ACTION_DOWN){
-            tap(true);
-        } else if (event.getAction() == MotionEvent.ACTION_UP){
-            tap(false);
+        Logger.getAnonymousLogger().log(Level.FINER, "Touch event");
+        if(mEngineHandle == 0) {
+            mEngineHandle = startEngine();
         }
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            tap(mEngineHandle, true);
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            tap(mEngineHandle, false);
+        }
+
         return super.onTouchEvent(event);
+
     }
 
     //Asks hardware for audio stream settings

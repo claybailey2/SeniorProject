@@ -2,26 +2,54 @@
 // Created by Clay Bailey on 2020/08/31.
 //
 #include "AudioEngine.h"
+#include "logging_macros.h"
+
+AudioEngine::AudioEngine() {
+}
+
+AudioEngine::~AudioEngine() {
+    mStream->close();
+    delete mKick;
+}
 
 void AudioEngine::start() {
+
     AudioStreamBuilder builder;
 
     builder.setFormat(AudioFormat::Float);
     builder.setChannelCount(1);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
-    builder.setSharingMode(SharingMode::Exclusive);//Do not mix audio with another app's (bypass mixer = lower latency)
+    builder.setSharingMode(
+            SharingMode::Exclusive);//Do not mix audio with another app's (bypass mixer = lower latency)
     builder.setCallback(this);
 
     builder.openStream(&mStream);
+
+    //create oscillator with sample rate from stream
+    if (mStream != nullptr) {
+        LOGD("Allocating Kick");
+        mKick = new KickDrum(80.0, 0.5, mStream->getSampleRate());
+    }
+    else LOGE("mStream is NULL");
 
     //interrogate audio device for minimum amount of data it will read in one operation (burst)
     //use two bursts to prevent underruns
     mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
 
-    //create oscillator with sample rate from stream
-    mKick = new KickDrum(80.0, 0.5, mStream->getSampleRate());
-
     mStream->requestStart();
+    LOGD("Engine Started");
+}
+
+void AudioEngine::pause() {
+    mIsInPause = true;
+    mStream->pause();
+}
+
+void AudioEngine::resume() {
+    mIsInPause = false;
+
+    mStream->flush();
+    mStream->start();
 }
 
 /*
@@ -39,6 +67,8 @@ void AudioEngine::start() {
  */
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
+    //LOGD("Audio Ready");
+    if (mIsInPause) return  DataCallbackResult::Stop;
     mKick->renderAudio(static_cast<float *>(audioData), numFrames);
     return DataCallbackResult::Continue;
 }
@@ -52,3 +82,5 @@ int32_t AudioEngine::getBufferSize() {
 void AudioEngine::tap(bool isDown) {
     mKick->tap(isDown);
 }
+
+

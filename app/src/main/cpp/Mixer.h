@@ -6,6 +6,7 @@
 #define SENIOR_PROJECT_MIXER_H
 
 #include "IRenderableAudio.h"
+#include "Envelope.h"
 #include <array>
 
 constexpr int32_t kBufferSize = 192*10; //TODO: find a way to ask the stream for a reasonable buffer size
@@ -17,15 +18,16 @@ public:
         memset(audioData, 0, sizeof(float) * numFrames);
         for (int i = 0; i < mNextFreeTrack; i++) {
             mTracks[i]->renderAudio(mMixingBuffer,numFrames);
-
             for (int j = 0; j < numFrames; j++) {
-                audioData[j] += mMixingBuffer[j] * mAmplitudes[i];
+                audioData[j] += mMixingBuffer[j] * mAmplitudes[i] * mEnvelopes[i]->get();
             }
         };
     }
 
-    void addTrack(IRenderableAudio *track, float amplitude){
+    //optional arguments of amplitudeEnvelope and amplitude
+    void addTrack(IRenderableAudio *track, Envelope *envelope = nullptr, float amplitude = 1.0){
         mTracks[mNextFreeTrack] = track;
+        mEnvelopes[mNextFreeTrack] = envelope;
         mAmplitudes[mNextFreeTrack] = amplitude;
 
         if(mNextFreeTrack < kMaxTracks - 1) {
@@ -37,7 +39,8 @@ private:
     int mChannelCount;//TODO: incorporate multichannel functionality
     float mMixingBuffer[kBufferSize];
     IRenderableAudio* mTracks[kMaxTracks];
-    float mAmplitudes[kMaxTracks] ;
+    Envelope *mEnvelopes[kMaxTracks];
+    float mAmplitudes[kMaxTracks];
     uint8_t mNextFreeTrack = 0;
 };
 

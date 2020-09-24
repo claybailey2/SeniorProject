@@ -20,7 +20,11 @@ using namespace oboe;
 //AudioEngine inherits from AudioStreamCallback
 class AudioEngine : public AudioStreamCallback {
 public:
+    AudioEngine();
+    ~AudioEngine();
     void start();
+    void pause();
+    void resume();
 
     DataCallbackResult
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
@@ -30,9 +34,9 @@ public:
     void tap(bool isDown);
 
 private:
-    AudioStream *mStream;
-    KickDrum *mKick;
-
+    bool mIsInPause = false;
+    AudioStream *mStream = nullptr;
+    KickDrum *mKick = nullptr;
 };
 
 #endif //SENIOR_PROJECT_AUDIOENGINE_H

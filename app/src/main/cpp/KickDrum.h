@@ -5,21 +5,36 @@
 #ifndef SENIOR_PROJECT_KICKDRUM_H
 #define SENIOR_PROJECT_KICKDRUM_H
 
-#include "IRenderableAudio.h"
-#include "Mixer.h"
+#include <vector>
 
+#include "IRenderableAudio.h"
+#include "logging_macros.h"
+
+using namespace std;
 
 class KickDrum : public IRenderableAudio {
 public:
     KickDrum(double frequency, float amplitude, int32_t sampleRate)
-    : mFrequency(frequency), mAmplitude(amplitude), mSampleRate(sampleRate), mBody(frequency, sampleRate) {
-        mMixer.addTrack(&mBody, 0.5);
-        mMixer.addTrack(&mClick, 0.2);
+    : mFrequency(frequency), mAmplitude(amplitude), mSampleRate(sampleRate),
+    mBody(frequency, sampleRate),
+    mEnvelope(
+            vector<double> {0, 1, 0},
+            vector<double> {0.003, 0.2},
+            0, sampleRate)
+            {
+        LOGD("Kick Constructor");
+        mBody.SetWaveOn(true);
+        mClick.SetWaveOn(true);
+
+        mMixer.addTrack(&mBody, &mEnvelope, 0.5);
+        mMixer.addTrack(&mClick, &mEnvelope,0.2);
     }
 
     void tap(bool isDown) {
-        mBody.SetWaveOn(isDown);
-        mClick.SetWaveOn(isDown);
+        if (isDown) {
+            mEnvelope.reset();
+            mEnvelope.play();
+        }
     }
 
     void renderAudio(float *audioData, int32_t numFrames) override {
@@ -32,9 +47,12 @@ private:
     float mAmplitude = 1.0;
     Mixer mMixer;
 
-    //dynamically allocated
     SquareOsc mBody;
     NoiseOsc mClick;
+
+    Envelope mEnvelope;
+    vector<double> mValues = {0, 1, 0};
+    vector<double> mTimes = {0.003, 0.2};
 };
 
 #endif //SENIOR_PROJECT_KICKDRUM_H
