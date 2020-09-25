@@ -7,6 +7,9 @@
 
 #include <vector>
 #include <math.h>
+
+#include "logging_macros.h"
+
 using namespace std;
 
 class Envelope {
@@ -20,23 +23,16 @@ public:
         }
     }
 
-    ~Envelope(){
-        if (mEnvelope != nullptr){
-            delete mEnvelope;
-        }
-    }
 
     //TODO: KONTROL RATE
     void setSampleRate(int32_t sampleRate){
         mSampleRate = sampleRate;
-        //clear previous envelope
-        if (mEnvelope != nullptr) delete mEnvelope;
 
         //allocate new envelope
         double totalTime = 0;
         for (double time : mTimes) totalTime += time;
         mLength = totalTime * mSampleRate;
-        mEnvelope = new float(mLength);
+        mEnvelope.resize(mLength);
 
         //fill in envelope sample by sample using exponential interpolation
         //TODO: change interpolator to use incoming exponent argument
@@ -49,9 +45,15 @@ public:
             double startTime = i == 0 ? 0 : (mTimes[i-1] * mSampleRate);
             double endTime = mTimes[i] * mSampleRate;
 
-            while (curFrame < endTime) {
-                mEnvelope[curFrame] = startVal *
-                        pow((endVal/startVal), ((curFrame-startTime) / (endTime-startTime)));
+            while (curFrame < endTime && curFrame < mLength) {
+                if (startVal == 0 || endTime == startTime) {
+                    mEnvelope[curFrame] = 0;
+                    LOGE(__FILE__": Divide by Zero");
+                } else {
+                    mEnvelope[curFrame] = startVal *
+                                          pow((endVal / startVal),
+                                              ((curFrame - startTime) / (endTime - startTime)));
+                }
                 curFrame++;
             }
         }
@@ -71,8 +73,8 @@ public:
 
     //read current value and increment envelope
     float get() {
-        float current = *(mEnvelope + mPosition);
-        if (mIsPlaying && mPosition < mLength)
+        float current = mEnvelope[mPosition];
+        if (mIsPlaying && mPosition < mLength - 1)
             mPosition++;
         return current;
     }
@@ -83,7 +85,7 @@ private:
     double mExponent;
     int32_t mSampleRate;
 
-    float *mEnvelope;
+    vector<float> mEnvelope;
     int mPosition = 0;
     int mLength;
 

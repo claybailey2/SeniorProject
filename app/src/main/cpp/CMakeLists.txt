@@ -54,3 +54,14 @@ target_link_libraries( # Specifies the target library.
 
                         #Link Oboe
                         oboe )
+
+target_compile_options(native-lib
+        PRIVATE
+        -std=c++14
+        -Wall
+        -Wextra-semi
+        -Wshadow
+        -Wshadow-field
+        -Ofast
+        -g
+        "$<$<CONFIG:DEBUG>:-Werror>")

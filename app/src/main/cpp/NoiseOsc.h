@@ -18,6 +18,7 @@ public:
             for (int i = 0; i < numFrames; i++) {
                 //generate a random float value between -1.0 and 1.0
                 float noise = ((rand() % (kNumIncrements * 2) + 1) / kNumIncrements) - 1;
+                assert(noise <= 1 && noise >= -1);
                 audioData[i] = noise;
             }
         } else {

@@ -8,6 +8,8 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private native long startEngine();
     private native void stopEngine(long engineHandle);
     private native void resumeEngine(long engineHandle);
-    private native void tap(long engineHandle, boolean b);
+    private native void tap(long engineHandle);
 
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 
@@ -39,6 +41,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+        Button kickButton = (Button)findViewById(R.id.button_kick);
+        if(kickButton != null) {
+            kickButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mEngineHandle == 0) {
+                        mEngineHandle = startEngine();
+                    }
+                    tap(mEngineHandle);
+                }
+            });
+        } else {
+            Logger.getAnonymousLogger().log(Level.FINER, "button not found");
+        }
 
         //Configure app to hardware-specific audio output settings
         setDefaultStreamValues(this);
@@ -58,23 +74,23 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
     }
 
-    //logic to handle screen taps.
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        Logger.getAnonymousLogger().log(Level.FINER, "Touch event");
-        if(mEngineHandle == 0) {
-            mEngineHandle = startEngine();
-        }
-
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            tap(mEngineHandle, true);
-        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            tap(mEngineHandle, false);
-        }
-
-        return super.onTouchEvent(event);
-
-    }
+//    //logic to handle screen taps.
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        Logger.getAnonymousLogger().log(Level.FINER, "Touch event");
+//        if(mEngineHandle == 0) {
+//            mEngineHandle = startEngine();
+//        }
+//
+//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+//            tap(mEngineHandle, true);
+//        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+//            tap(mEngineHandle, false);
+//        }
+//
+//        return super.onTouchEvent(event);
+//
+//    }
 
     //Asks hardware for audio stream settings
     //code block from MegaDrone Sample

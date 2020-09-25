@@ -8,7 +8,8 @@
 // AudioEngine.h
 
 #include <oboe/Oboe.h>
-
+#include "Constants.h"
+#include "SinOsc.h"
 #include "SquareOsc.h"
 #include "NoiseOsc.h"
 #include "Mixer.h"
@@ -31,7 +32,7 @@ public:
 
     int32_t getBufferSize();
 
-    void tap(bool isDown);
+    void tap();
 
 private:
     bool mIsInPause = false;

@@ -5,6 +5,7 @@
 #include "logging_macros.h"
 
 AudioEngine::AudioEngine() {
+    mKick = nullptr;
 }
 
 AudioEngine::~AudioEngine() {
@@ -27,8 +28,8 @@ void AudioEngine::start() {
 
     //create oscillator with sample rate from stream
     if (mStream != nullptr) {
-        LOGD("Allocating Kick");
-        mKick = new KickDrum(80.0, 0.5, mStream->getSampleRate());
+        //LOGD("Allocating Kick");
+        //mKick = new KickDrum(50.0, 0.5, mStream->getSampleRate());
     }
     else LOGE("mStream is NULL");
 
@@ -69,18 +70,21 @@ DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     //LOGD("Audio Ready");
     if (mIsInPause) return  DataCallbackResult::Stop;
-    mKick->renderAudio(static_cast<float *>(audioData), numFrames);
+    if (mKick == nullptr) {
+        return DataCallbackResult::Continue;
+    }
+    try {
+        mKick->renderAudio(static_cast<float *>(audioData), numFrames);
+    } catch(const std::overflow_error& e){
+        LOGE("%s",e.what());
+    }
+
     return DataCallbackResult::Continue;
 }
 
-int32_t AudioEngine::getBufferSize() {
-    if (mStream != nullptr) {
-        return mStream->getFramesPerBurst() * 2;
-    } else return 512;
-}
-
-void AudioEngine::tap(bool isDown) {
-    mKick->tap(isDown);
+void AudioEngine::tap() {
+    if (mKick == nullptr) mKick = new KickDrum(110.0, 0.5, mStream->getSampleRate());
+    mKick->tap();
 }
 
 

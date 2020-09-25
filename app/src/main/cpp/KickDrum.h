@@ -15,26 +15,35 @@ using namespace std;
 class KickDrum : public IRenderableAudio {
 public:
     KickDrum(double frequency, float amplitude, int32_t sampleRate)
-    : mFrequency(frequency), mAmplitude(amplitude), mSampleRate(sampleRate),
-    mBody(frequency, sampleRate),
-    mEnvelope(
-            vector<double> {0, 1, 0},
-            vector<double> {0.003, 0.2},
-            0, sampleRate)
-            {
+    : mBody(frequency, sampleRate),
+
+            mClickEnvelope(
+            vector<double> {0.001, 1, 0.001},
+            vector<double> {0.003, 0.08},
+            0, sampleRate),
+
+            mBodyEnvelope(
+              vector<double> {0.001, 1, 0.001},
+              vector<double> {0.006, 0.8},
+              0, sampleRate)
+
+    {
         LOGD("Kick Constructor");
         mBody.SetWaveOn(true);
         mClick.SetWaveOn(true);
 
-        mMixer.addTrack(&mBody, &mEnvelope, 0.5);
-        mMixer.addTrack(&mClick, &mEnvelope,0.2);
+        mMixer.addTrack(&mBody, &mBodyEnvelope, 0.5);
+        mMixer.addTrack(&mClick, &mClickEnvelope,0.2);
     }
 
-    void tap(bool isDown) {
-        if (isDown) {
-            mEnvelope.reset();
-            mEnvelope.play();
-        }
+    void tap() {
+
+            mClickEnvelope.reset();
+            mBodyEnvelope.reset();
+
+            mClickEnvelope.play();
+            mBodyEnvelope.play();
+
     }
 
     void renderAudio(float *audioData, int32_t numFrames) override {
@@ -42,17 +51,12 @@ public:
     }
 
 private:
-    int32_t mSampleRate = 48000;
-    double mFrequency = 50;
-    float mAmplitude = 1.0;
+    SinOsc mBody;
+    Envelope mClickEnvelope;
+    Envelope mBodyEnvelope;
+
     Mixer mMixer;
-
-    SquareOsc mBody;
     NoiseOsc mClick;
-
-    Envelope mEnvelope;
-    vector<double> mValues = {0, 1, 0};
-    vector<double> mTimes = {0.003, 0.2};
 };
 
 #endif //SENIOR_PROJECT_KICKDRUM_H

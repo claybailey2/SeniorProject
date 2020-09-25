@@ -25,10 +25,10 @@
     //Handle tap event
     JNIEXPORT void JNICALL
     Java_blog_claybailey_seniorproject_MainActivity_tap(JNIEnv *env, jobject thiz,
-                                                        jlong jEngineHandle, jboolean b) {
+                                                        jlong jEngineHandle) {
         auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
         if (engine) {
-            engine->tap(b);
+            engine->tap();
         }
     }
 
