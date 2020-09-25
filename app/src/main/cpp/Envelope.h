@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <math.h>
+#include <limits>
 
 #include "logging_macros.h"
 
@@ -15,12 +16,29 @@ using namespace std;
 class Envelope {
 public:
     Envelope(vector<double> values, vector<double> times, double exponent, int32_t sampleRate) {
-        if (values.size() == times.size() + 1) {
-            mValues = values;
-            mTimes = times;
-            mExponent = exponent;
-            setSampleRate(sampleRate);
+        if (sampleRate == 0) {
+            LOGE(__FILE__": sample rate must be greater than 0.");
         }
+        if (values.size() != times.size() + 1) {
+            LOGE(__FILE__": values-times vector size mismatch.");
+        }
+
+        //eliminate divide-by-zero and floor noise errors
+        mValues = values;
+        for (int i = 0; i < mValues.size(); i++) {
+            if (mValues[i] == 0) mValues[i] = numeric_limits<double>::epsilon();
+        }
+
+        //one-sample step for when time is 0.
+        mTimes = times;
+        for (int i = 0; i < mTimes.size(); i++) {
+            if(mTimes[i] == 0) mValues[i] = 1 / sampleRate;
+        }
+
+        mExponent = exponent;
+
+        setSampleRate(sampleRate);
+
     }
 
 
@@ -40,16 +58,18 @@ public:
         int32_t curFrame = 0;
         for (int i = 0; i < mValues.size() - 1; i++) {
             double startVal = mValues[i];
-            double endVal = mValues[i+1];
+            double endVal = mValues[i + 1];
 
             double startTime = i == 0 ? 0 : (mTimes[i-1] * mSampleRate);
-            double endTime = mTimes[i] * mSampleRate;
+            double endTime = 0;
+            for (int j = 0; j < i + 1; j++) endTime += mTimes[j] * mSampleRate;
 
             while (curFrame < endTime && curFrame < mLength) {
                 if (startVal == 0 || endTime == startTime) {
                     mEnvelope[curFrame] = 0;
                     LOGE(__FILE__": Divide by Zero");
-                } else {
+                }
+                else {
                     mEnvelope[curFrame] = startVal *
                                           pow((endVal / startVal),
                                               ((curFrame - startTime) / (endTime - startTime)));

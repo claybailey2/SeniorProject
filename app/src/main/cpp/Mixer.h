@@ -15,7 +15,7 @@ constexpr int32_t kMaxTracks = 100;
 
 class Mixer : public IRenderableAudio {
 public:
-    Mixer(){
+    Mixer(float amplitude) : mMixAmplitude(amplitude) {
         mMixingBuffer.resize(kBufferSize);
         mTracks.resize(kMaxTracks);
         mEnvelopes.resize(kMaxTracks);
@@ -26,10 +26,12 @@ public:
         memset(audioData, 0, sizeof(float) * numFrames);
         for (int i = 0; i < mNextFreeTrack; i++) {
             //does this vector->pointer conversion work??
-            mTracks[i]->renderAudio(&mMixingBuffer[0],numFrames);
-            for (auto v : mMixingBuffer) LOGD("%f", v);
+            mTracks[i]->renderAudio(&mMixingBuffer[0], numFrames);
+            //for (int k = 0; k < numFrames; k++) LOGD(__FILE__"%f", mMixingBuffer[k]);
             for (int j = 0; j < numFrames; j++) {
-                audioData[j] += mMixingBuffer[j] * mAmplitudes[i] * mEnvelopes[i]->get();
+                audioData[j] += mMixingBuffer[j] * mEnvelopes[i]->get() * mAmplitudes[i] * mMixAmplitude;
+                //LOGD(__FILE__"Env: %f", mEnvelopes[i]->get());
+
                 if (!(audioData[j] < 1 && audioData[j] > -1))
                     LOGE(__FILE__": Audio Data Out of Bounds: %f\n[%i] [%i] MixBuf: %f, Amp: %f Env: %f",
                             audioData[j], i, j, mMixingBuffer[j], mAmplitudes[i], mEnvelopes[i]->get());
@@ -51,6 +53,7 @@ public:
 
 private:
     //int mChannelCount;//TODO: incorporate multichannel functionality
+    float mMixAmplitude;
     vector<float> mMixingBuffer;
     vector<IRenderableAudio*> mTracks;
     vector<Envelope *>mEnvelopes;

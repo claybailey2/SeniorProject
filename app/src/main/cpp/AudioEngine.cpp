@@ -27,15 +27,11 @@ void AudioEngine::start() {
     builder.openStream(&mStream);
 
     //create oscillator with sample rate from stream
-    if (mStream != nullptr) {
-        //LOGD("Allocating Kick");
-        //mKick = new KickDrum(50.0, 0.5, mStream->getSampleRate());
-    }
-    else LOGE("mStream is NULL");
+    if (mStream == nullptr) LOGE("mStream is NULL");
 
     //interrogate audio device for minimum amount of data it will read in one operation (burst)
     //use two bursts to prevent underruns
-    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
+    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 4);
 
     mStream->requestStart();
     LOGD("Engine Started");
@@ -82,9 +78,13 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
     return DataCallbackResult::Continue;
 }
 
-void AudioEngine::tap() {
-    if (mKick == nullptr) mKick = new KickDrum(110.0, 0.5, mStream->getSampleRate());
+void AudioEngine::tapKick() {
+    if (mKick == nullptr) mKick = new KickDrum(50.0, 0.3, mStream->getSampleRate());
     mKick->tap();
 }
 
+void AudioEngine::tapSteelDrum() {
+    if (mSteelDrum == nullptr) mSteelDrum = new SteelDrum(440.0, 0.7, mStream->getSampleRate());
+    mSteelDrum->tap();
+}
 

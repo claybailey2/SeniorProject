@@ -16,6 +16,7 @@
 #include "Envelope.h"
 
 #include "KickDrum.h"
+#include "SteelDrum.h"
 
 using namespace oboe;
 //AudioEngine inherits from AudioStreamCallback
@@ -32,12 +33,14 @@ public:
 
     int32_t getBufferSize();
 
-    void tap();
+    void tapKick();
+    void tapSteelDrum();
 
 private:
     bool mIsInPause = false;
     AudioStream *mStream = nullptr;
     KickDrum *mKick = nullptr;
+    SteelDrum *mSteelDrum = nullptr;
 };
 
 #endif //SENIOR_PROJECT_AUDIOENGINE_H

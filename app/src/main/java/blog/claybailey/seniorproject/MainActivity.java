@@ -26,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
     private native long startEngine();
     private native void stopEngine(long engineHandle);
     private native void resumeEngine(long engineHandle);
-    private native void tap(long engineHandle);
+    private native void tapKick(long engineHandle);
+    private native void tapSteelDrum(long engineHandle);
 
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+
         Button kickButton = (Button)findViewById(R.id.button_kick);
         if(kickButton != null) {
             kickButton.setOnClickListener(new View.OnClickListener() {
@@ -49,11 +51,24 @@ public class MainActivity extends AppCompatActivity {
                     if (mEngineHandle == 0) {
                         mEngineHandle = startEngine();
                     }
-                    tap(mEngineHandle);
+                    tapKick(mEngineHandle);
                 }
             });
         } else {
-            Logger.getAnonymousLogger().log(Level.FINER, "button not found");
+            Logger.getAnonymousLogger().log(Level.FINER, "Kick button not found");
+        }
+
+        Button steelDrumButton = (Button)findViewById(R.id.button_steel_drum);
+        if(steelDrumButton != null) {
+            steelDrumButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mEngineHandle == 0) {
+                        mEngineHandle = startEngine();
+                    }
+                    tapSteelDrum(mEngineHandle);
+                }
+            });
         }
 
         //Configure app to hardware-specific audio output settings

@@ -13,6 +13,7 @@
 
 class SinOsc : public IRenderableAudio {
 public:
+    //TODO: Change frequency to optional arg
     SinOsc(double frequency, int32_t sampleRate) : mFrequency(frequency), mSampleRate(sampleRate) {
         UpdatePhaseIncrement();
     }
@@ -23,6 +24,7 @@ public:
             for (int i = 0; i < numFrames; i++) {
                 //sin wave
                 audioData[i] = sinf(mPhase) * mAmplitude;
+                //LOGD(__FILE__"%f",audioData[i]);
                 mPhase += mPhaseIncrement;
 
                 //reset phase
@@ -37,8 +39,8 @@ public:
         mFrequency = frequency;
     }
 
-    void SetWaveOn(bool isDown) {
-        mIsWaveOn = isDown;
+    void SetWaveOn(bool isOn) {
+        mIsWaveOn = isOn;
     }
 
 private:
@@ -50,9 +52,7 @@ private:
     float mPhaseIncrement {};
 
     void UpdatePhaseIncrement() {
-        if (mSampleRate == 0)
-            LOGE("Sample rate is zero!");
-            return;
+        if (mSampleRate == 0) LOGE(__FILE__"Sample rate is zero!");
         mPhaseIncrement = static_cast<float>(kTwoPi * mFrequency / mSampleRate);
     }
 };
