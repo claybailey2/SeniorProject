@@ -6,9 +6,10 @@
 #define SENIOR_PROJECT_CONSTANTS_H
 
 //define constants
-constexpr double kDefaultFrequency = 440.0;
+constexpr float kDefaultFrequency = 440.0;
 constexpr int32_t kDefaultSampleRate = 48000;
-constexpr double kPi = M_PI;
-constexpr double kTwoPi = 2 * kPi;
+constexpr int32_t kControlRate = 512;
+constexpr float kPi = M_PI;
+constexpr float kTwoPi = 2 * kPi;
 
 #endif //SENIOR_PROJECT_CONSTANTS_H

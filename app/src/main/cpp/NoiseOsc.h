@@ -26,7 +26,7 @@ public:
         }
     }
 
-    void SetWaveOn(bool isOn){
+    void setWaveOn(bool isOn){
         mIsOn = isOn;
     }
 

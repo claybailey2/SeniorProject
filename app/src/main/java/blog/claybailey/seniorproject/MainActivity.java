@@ -7,7 +7,6 @@ import android.content.pm.ActivityInfo;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -27,9 +26,13 @@ public class MainActivity extends AppCompatActivity {
     private native void stopEngine(long engineHandle);
     private native void resumeEngine(long engineHandle);
     private native void tapKick(long engineHandle);
-    private native void tapSteelDrum(long engineHandle);
+    private native void tapSteelDrum(long engineHandle, double frequency);
 
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
+
+    private double kSteelDrumFreq1 = 260;
+    private double kSteelDrumFreq2 = 330;
+    private double kSteelDrumFreq3 = 392;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -42,15 +45,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+        mEngineHandle = startEngine();
 
         Button kickButton = (Button)findViewById(R.id.button_kick);
         if(kickButton != null) {
             kickButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mEngineHandle == 0) {
-                        mEngineHandle = startEngine();
-                    }
                     tapKick(mEngineHandle);
                 }
             });
@@ -58,15 +59,32 @@ public class MainActivity extends AppCompatActivity {
             Logger.getAnonymousLogger().log(Level.FINER, "Kick button not found");
         }
 
-        Button steelDrumButton = (Button)findViewById(R.id.button_steel_drum);
-        if(steelDrumButton != null) {
-            steelDrumButton.setOnClickListener(new View.OnClickListener() {
+        Button steelDrumButton1 = (Button)findViewById(R.id.button_steel_drum_1);
+        if(steelDrumButton1 != null) {
+            steelDrumButton1.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mEngineHandle == 0) {
-                        mEngineHandle = startEngine();
-                    }
-                    tapSteelDrum(mEngineHandle);
+                    tapSteelDrum(mEngineHandle, kSteelDrumFreq1);
+                }
+            });
+        }
+
+        Button steelDrumButton2 = (Button)findViewById(R.id.button_steel_drum_2);
+        if(steelDrumButton2 != null) {
+            steelDrumButton2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tapSteelDrum(mEngineHandle, kSteelDrumFreq2);
+                }
+            });
+        }
+
+        Button steelDrumButton3 = (Button)findViewById(R.id.button_steel_drum_3);
+        if(steelDrumButton3 != null) {
+            steelDrumButton3.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    tapSteelDrum(mEngineHandle, kSteelDrumFreq3);
                 }
             });
         }
@@ -88,24 +106,6 @@ public class MainActivity extends AppCompatActivity {
         stopEngine(mEngineHandle);
         super.onPause();
     }
-
-//    //logic to handle screen taps.
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        Logger.getAnonymousLogger().log(Level.FINER, "Touch event");
-//        if(mEngineHandle == 0) {
-//            mEngineHandle = startEngine();
-//        }
-//
-//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//            tap(mEngineHandle, true);
-//        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-//            tap(mEngineHandle, false);
-//        }
-//
-//        return super.onTouchEvent(event);
-//
-//    }
 
     //Asks hardware for audio stream settings
     //code block from MegaDrone Sample

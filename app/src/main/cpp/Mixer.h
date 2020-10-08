@@ -15,7 +15,7 @@ constexpr int32_t kMaxTracks = 100;
 
 class Mixer : public IRenderableAudio {
 public:
-    Mixer(float amplitude) : mMixAmplitude(amplitude) {
+    Mixer(float amplitude = 1) : mMixAmplitude(amplitude) {
         mMixingBuffer.resize(kBufferSize);
         mTracks.resize(kMaxTracks);
         mEnvelopes.resize(kMaxTracks);
@@ -29,12 +29,13 @@ public:
             mTracks[i]->renderAudio(&mMixingBuffer[0], numFrames);
             //for (int k = 0; k < numFrames; k++) LOGD(__FILE__"%f", mMixingBuffer[k]);
             for (int j = 0; j < numFrames; j++) {
-                audioData[j] += mMixingBuffer[j] * mEnvelopes[i]->get() * mAmplitudes[i] * mMixAmplitude;
+                float envVal = mEnvelopes[i]==nullptr ? 1 : mEnvelopes[i]->get();
+                audioData[j] += mMixingBuffer[j] * envVal * mAmplitudes[i] * mMixAmplitude;
                 //LOGD(__FILE__"Env: %f", mEnvelopes[i]->get());
 
                 if (!(audioData[j] < 1 && audioData[j] > -1))
                     LOGE(__FILE__": Audio Data Out of Bounds: %f\n[%i] [%i] MixBuf: %f, Amp: %f Env: %f",
-                            audioData[j], i, j, mMixingBuffer[j], mAmplitudes[i], mEnvelopes[i]->get());
+                            audioData[j], i, j, mMixingBuffer[j], mAmplitudes[i], envVal);
 
             }
         };
@@ -49,6 +50,12 @@ public:
         if(mNextFreeTrack < kMaxTracks - 1) {
             mNextFreeTrack++;
         }
+    }
+
+    void clearTracks(){
+        mTracks.clear();
+        mEnvelopes.clear();
+        mAmplitudes.clear();
     }
 
 private:

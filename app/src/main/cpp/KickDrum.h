@@ -21,21 +21,21 @@ public:
             mBody(frequency, sampleRate),
 
             mClickEnvelope(
-                    vector<double> {0, 1, 0},
-                    vector<double> {0.007, 0.015},
-                    0, sampleRate),
+                    vector<float> {0, 1, 0},
+                    vector<float> {0.007, 0.015},
+                    3, sampleRate),
 
             mBodyEnvelope(
-                    vector<double> {0, 1, 0},
-                    vector<double> {0.01, 0.3},
-                    0, sampleRate),
+                    vector<float> {0, 1, 0},
+                    vector<float> {0.01, 0.3},
+                    3, sampleRate),
 
             mMixer(mAmplitude)
 
     {
         LOGD("Kick Constructor");
-        mBody.SetWaveOn(true);
-        mClick.SetWaveOn(true);
+        mBody.setWaveOn(true);
+        mClick.setWaveOn(true);
 
         mMixer.addTrack(&mBody, &mBodyEnvelope, 0.6);
         mMixer.addTrack(&mClick, &mClickEnvelope,0.01);

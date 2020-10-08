@@ -14,6 +14,13 @@ Java_blog_claybailey_seniorproject_MainActivity_startEngine(JNIEnv *env, jobject
     return reinterpret_cast<jlong>(engine);
 }
 
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_resumeEngine(JNIEnv *env, jobject thiz,
+                                                             jlong jEngineHandle) {
+    auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
+    engine->resume();
+}
+
 //Stop AudioEngine
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_stopEngine(JNIEnv *env, jobject thiz,
@@ -32,6 +39,16 @@ Java_blog_claybailey_seniorproject_MainActivity_tapKick(JNIEnv *env, jobject thi
     }
 }
 
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_tapSteelDrum(JNIEnv *env, jobject thiz,
+        jlong engine_handle, jdouble frequency) {
+
+    auto engine = reinterpret_cast<AudioEngine *>(engine_handle);
+    if (engine) {
+        engine->tapSteelDrum(frequency);
+    }
+}
+
 //update default stream values for hardware
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_native_1setDefaultStreamValues(JNIEnv *env,
@@ -40,21 +57,5 @@ Java_blog_claybailey_seniorproject_MainActivity_native_1setDefaultStreamValues(J
                                                                                jint frames_per_burst) {
     oboe::DefaultStreamValues::SampleRate = (int32_t) sample_rate;
     oboe::DefaultStreamValues::FramesPerBurst = (int32_t) frames_per_burst;
-}
-
-JNIEXPORT void JNICALL
-Java_blog_claybailey_seniorproject_MainActivity_resumeEngine(JNIEnv *env, jobject thiz,
-                                                             jlong jEngineHandle) {
-    auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
-    engine->resume();
-}
-
-JNIEXPORT void JNICALL
-Java_blog_claybailey_seniorproject_MainActivity_tapSteelDrum(JNIEnv *env, jobject thiz,
-                                                             jlong engine_handle) {
-    auto engine = reinterpret_cast<AudioEngine *>(engine_handle);
-    if (engine) {
-        engine->tapSteelDrum();
-    }
 }
 }

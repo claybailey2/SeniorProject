@@ -34,9 +34,10 @@ public:
     int32_t getBufferSize();
 
     void tapKick();
-    void tapSteelDrum();
+    void tapSteelDrum(double frequency);
 
 private:
+    Mixer mMasterMixer;
     bool mIsInPause = false;
     AudioStream *mStream = nullptr;
     KickDrum *mKick = nullptr;

@@ -4,13 +4,14 @@
 #include "AudioEngine.h"
 #include "logging_macros.h"
 
-AudioEngine::AudioEngine() {
-    mKick = nullptr;
+AudioEngine::AudioEngine()
+{
 }
 
 AudioEngine::~AudioEngine() {
     mStream->close();
     delete mKick;
+    delete mSteelDrum;
 }
 
 void AudioEngine::start() {
@@ -31,7 +32,13 @@ void AudioEngine::start() {
 
     //interrogate audio device for minimum amount of data it will read in one operation (burst)
     //use two bursts to prevent underruns
-    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 4);
+    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
+
+    mKick = new KickDrum(50.0, 0.7, mStream->getSampleRate());
+    mMasterMixer.addTrack(mKick);
+
+    mSteelDrum = new SteelDrum(440.0, 0.3, mStream->getSampleRate());
+    mMasterMixer.addTrack(mSteelDrum);
 
     mStream->requestStart();
     LOGD("Engine Started");
@@ -66,11 +73,11 @@ DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     //LOGD("Audio Ready");
     if (mIsInPause) return  DataCallbackResult::Stop;
-    if (mKick == nullptr) {
+    if (mKick == nullptr || mSteelDrum == nullptr) {
         return DataCallbackResult::Continue;
     }
     try {
-        mKick->renderAudio(static_cast<float *>(audioData), numFrames);
+        mMasterMixer.renderAudio(static_cast<float *>(audioData), numFrames);
     } catch(const std::overflow_error& e){
         LOGE("%s",e.what());
     }
@@ -79,12 +86,11 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
 }
 
 void AudioEngine::tapKick() {
-    if (mKick == nullptr) mKick = new KickDrum(50.0, 0.3, mStream->getSampleRate());
     mKick->tap();
 }
 
-void AudioEngine::tapSteelDrum() {
-    if (mSteelDrum == nullptr) mSteelDrum = new SteelDrum(440.0, 0.7, mStream->getSampleRate());
+void AudioEngine::tapSteelDrum(double frequency) {
+    mSteelDrum->setFrequency(frequency);
     mSteelDrum->tap();
 }
 

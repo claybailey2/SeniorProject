@@ -37,9 +37,14 @@ public:
 
     void setFrequency(double frequency) {
         mFrequency = frequency;
+        UpdatePhaseIncrement();
     }
 
-    void SetWaveOn(bool isOn) {
+    void setAmplitude(float amplitude) {
+        mAmplitude = amplitude;
+    }
+
+    void setWaveOn(bool isOn) {
         mIsWaveOn = isOn;
     }
 
@@ -47,9 +52,9 @@ private:
     bool mIsWaveOn {false};
     double mFrequency = kDefaultFrequency;
     int32_t mSampleRate = kDefaultSampleRate;
-    float mAmplitude = 0.5;
+    float mAmplitude = 1.0;
     float mPhase = 0.0;
-    float mPhaseIncrement {};
+    float mPhaseIncrement = 0.0;
 
     void UpdatePhaseIncrement() {
         if (mSampleRate == 0) LOGE(__FILE__"Sample rate is zero!");
