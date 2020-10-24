@@ -125,42 +125,4 @@ public class MainActivity extends AppCompatActivity {
             native_setDefaultStreamValues(defaultSampleRate, defaultFramesPerBurst);
         }
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    private void setupMidi() {
-        // Setup MIDI
-        MidiManager midiManager = (MidiManager) getSystemService(MIDI_SERVICE);
-        final MidiDeviceInfo compDeviceInfo = findDevice(midiManager, "ClayBailey",
-                "CompositionDevice");
-        int portIndex = 0;
-
-        final int destinationPortIndex = 0;
-
-        midiManager.openDevice(compDeviceInfo,
-                new MidiManager.OnDeviceOpenedListener() {
-                    @Override
-                    public void onDeviceOpened(MidiDevice compDevice) {
-                        MidiInputPort destinationInputPort = compDevice
-                                .openInputPort(destinationPortIndex);
-                    }
-                }, null);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public static MidiDeviceInfo findDevice(MidiManager midiManager,
-                                            String manufacturer, String product) {
-        for (MidiDeviceInfo info : midiManager.getDevices()) {
-            String deviceManufacturer = info.getProperties()
-                    .getString(MidiDeviceInfo.PROPERTY_MANUFACTURER);
-            if ((manufacturer != null)
-                    && manufacturer.equals(deviceManufacturer)) {
-                String deviceProduct = info.getProperties()
-                        .getString(MidiDeviceInfo.PROPERTY_PRODUCT);
-                if ((product != null) && product.equals(deviceProduct)) {
-                    return info;
-                }
-            }
-        }
-        return null;
-    }
 }
