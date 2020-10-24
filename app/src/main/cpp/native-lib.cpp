@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <amidi/AMidi.h>
 #include "AudioEngine.h"
 
 /*
@@ -41,7 +42,8 @@ Java_blog_claybailey_seniorproject_MainActivity_tapKick(JNIEnv *env, jobject thi
 
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_tapSteelDrum(JNIEnv *env, jobject thiz,
-        jlong engine_handle, jdouble frequency) {
+                                                             jlong engine_handle,
+                                                             jdouble frequency) {
 
     auto engine = reinterpret_cast<AudioEngine *>(engine_handle);
     if (engine) {
@@ -57,5 +59,17 @@ Java_blog_claybailey_seniorproject_MainActivity_native_1setDefaultStreamValues(J
                                                                                jint frames_per_burst) {
     oboe::DefaultStreamValues::SampleRate = (int32_t) sample_rate;
     oboe::DefaultStreamValues::FramesPerBurst = (int32_t) frames_per_burst;
+}
+
+static AMidiDevice *sNativeMidiDevice;
+static AMidiInputPort *sNativeInputPort;
+static AMidiOutputPort *sNativeOutputPort;
+
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_startNativeMidi(JNIEnv *env, jobject thiz,
+                                                                jobject app_midi_device) {
+    media_status_t status = AMidiDevice_fromJava(env, app_midi_device, &sNativeMidiDevice);
+    status = AMidiInputPort_open(sNativeMidiDevice, 0, &sNativeInputPort);
+    status = AMidiOutputPort_open(sNativeMidiDevice, 0, &sNativeOutputPort);
 }
 }
