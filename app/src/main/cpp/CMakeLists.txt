@@ -1,59 +1,28 @@
 # For more information about using CMake with Android Studio, read the
 # documentation: https://d.android.com/studio/projects/add-native-code.html
-
-# Sets the minimum version of CMake required to build the native library.
-
 cmake_minimum_required(VERSION 3.4.1)
+project(SeniorProject)
 
-# Creates and names a library, sets it as either STATIC
-# or SHARED, and provides the relative paths to its source code.
-# You can define multiple libraries, and CMake builds them for you.
-# Gradle automatically packages shared libraries with your APK.
-
-add_library( # Sets the name of the library.
-             native-lib
-
-             # Sets the library as a shared library.
-             SHARED
-
-             # Provides a relative path to your source file(s).
-             native-lib.cpp AudioEngine.cpp)
+#locate amidi api in ndk
+set(amidi-lib /Users/claybailey/Library/Android/sdk/ndk/21.3.6528147/sysroot/usr/)
+find_library(amidi-lib amidi)
 
 # Set the path to the Oboe directory
 set (OBOE_DIR /Users/claybailey/Library/Android/oboe)
-
-# Add the Oboe library as a subdirectory in your project.
 add_subdirectory(${OBOE_DIR} ./oboe)
-
-# Specify the path to the Oboe header files
 include_directories(${OBOE_DIR}/include)
 
-# Searches for a specified prebuilt library and stores the path as a
-# variable. Because CMake includes system libraries in the search path by
-# default, you only need to specify the name of the public NDK library
-# you want to add. CMake verifies that the library exists before
-# completing its build.
+# TODO: import from repo
+# find_package (oboe REQUIRED CONFIG)
 
-find_library( # Sets the name of the path variable.
-              log-lib
+add_library(native-lib SHARED
+        native-lib.cpp
+        AudioEngine.cpp
+        #AppMidiManager.cpp
+        )
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
-
-# Specifies libraries CMake should link to your target library. You
-# can link multiple libraries, such as libraries you define in this
-# build script, prebuilt third-party libraries, or system libraries.
-
-target_link_libraries( # Specifies the target library.
-                       native-lib
-
-                       # Links the target library to the log library
-                       # included in the NDK.
-                       ${log-lib}
-
-                        #Link Oboe
-                        oboe )
+#target_link_libraries(native-lib oboe::oboe)
+target_link_libraries(native-lib PRIVATE oboe ${amidi-lib})
 
 target_compile_options(native-lib
         PRIVATE
