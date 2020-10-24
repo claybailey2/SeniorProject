@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.4.1)
 project(SeniorProject)
 
 #locate amidi api in ndk
+# TODO: make relative path
 set(amidi-lib /Users/claybailey/Library/Android/sdk/ndk/21.3.6528147/sysroot/usr/)
 find_library(amidi-lib amidi)
 
