@@ -6,6 +6,7 @@ import android.media.midi.MidiReceiver;
 import java.io.IOException;
 
 public class AppMidiDeviceService extends MidiDeviceService {
+    private native void writeMidi(byte[] data, int length);
     private MidiReceiver mVirtualDevice = new VirtualDevice();
 
     @Override
@@ -16,7 +17,7 @@ public class AppMidiDeviceService extends MidiDeviceService {
     class VirtualDevice extends MidiReceiver {
         @Override
         public void onSend(byte[] msg, int offset, int count, long timestamp) throws IOException {
-            //Todo: what goes here? how to connect to Amidi asap?
+            writeMidi(msg, msg.length);
         }
     }
 }

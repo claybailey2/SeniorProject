@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity
     private native void tapKick(long engineHandle);
     private native void tapSteelDrum(long engineHandle, double frequency);
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
+    private native void startNativeMidi(MidiDevice appMidiDevice, long mEngineHandle);
 
     private double kSteelDrumFreq1 = 260;
     private double kSteelDrumFreq2 = 330;
@@ -115,18 +116,16 @@ public class MainActivity extends AppCompatActivity
     private void setupMidi() {
         // Setup MIDI
         MidiManager midiManager = (MidiManager) getSystemService(MIDI_SERVICE);
-        final MidiDeviceInfo compDeviceInfo = findDevice(midiManager, "blog.claybailey",
+        final MidiDeviceInfo appMidiDeviceInfo = findDevice(midiManager, "blog.claybailey",
                 "AppMidiDeviceService");
         int portIndex = 0;
 
-        final int destinationPortIndex = 0;
-
-        midiManager.openDevice(compDeviceInfo,
+        midiManager.openDevice(appMidiDeviceInfo,
                 new MidiManager.OnDeviceOpenedListener() {
+
                     @Override
-                    public void onDeviceOpened(MidiDevice compDevice) {
-                        MidiInputPort destinationInputPort = compDevice
-                                .openInputPort(destinationPortIndex);
+                    public void onDeviceOpened(MidiDevice appMidiDevice) {
+                        startNativeMidi(appMidiDevice, mEngineHandle);
                     }
                 }, null);
     }
