@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <amidi/AMidi.h>
+
 #include "AudioEngine.h"
 
 /*
@@ -65,11 +66,24 @@ static AMidiDevice *sNativeMidiDevice;
 static AMidiInputPort *sNativeInputPort;
 static AMidiOutputPort *sNativeOutputPort;
 
+//Open input and output ports of Native AMidi device.
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_startNativeMidi(JNIEnv *env, jobject thiz,
-                                                                jobject app_midi_device) {
+                                                                jobject app_midi_device,
+                                                                jlong jEngineHandle) {
+    auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
     media_status_t status = AMidiDevice_fromJava(env, app_midi_device, &sNativeMidiDevice);
     status = AMidiInputPort_open(sNativeMidiDevice, 0, &sNativeInputPort);
     status = AMidiOutputPort_open(sNativeMidiDevice, 0, &sNativeOutputPort);
+    engine->setOutputPort(sNativeOutputPort);
+}
+
+//Write midi to native input port. Code block from Native Midi overview on Android Dev site.
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_AppMidiDeviceService_writeMidi(JNIEnv *env, jobject thiz,
+                                                                  jbyteArray data, jint length) {
+    jbyte* bufferPtr = env->GetByteArrayElements(data, NULL);
+    AMidiInputPort_send(sNativeInputPort, (uint8_t*)bufferPtr, length);
+    env->ReleaseByteArrayElements(data, bufferPtr, JNI_ABORT);
 }
 }

@@ -72,12 +72,28 @@ void AudioEngine::resume() {
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     //LOGD("Audio Ready");
-    if (mIsInPause) return  DataCallbackResult::Stop;
-    if (mKick == nullptr || mSteelDrum == nullptr) {
+    if (mIsInPause) return  DataCallbackResult::Stop; //stop audio when app is out of focus
+
+    if (mKick == nullptr || mSteelDrum == nullptr) {//ensure synths are created
         return DataCallbackResult::Continue;
     }
+
+    uint8_t inDataBuffer[SIZE_MIDIBUFFER];
+    uint32_t numMessages;
+    int32_t opCode;
+    int64_t timestamp;
+    size_t numBytesReceived;
+
+    // Read MIDI Data
+    numMessages = AMidiOutputPort_receive(mOutputPort, &opCode, inDataBuffer,
+                                          sizeof(inDataBuffer), &numBytesReceived, &timestamp);
+    if (numMessages >= 0 && opCode == AMIDI_OPCODE_DATA) {
+        // Parse and respond to MIDI data
+        // ...
+    }
+
     try {
-        mMasterMixer.renderAudio(static_cast<float *>(audioData), numFrames);
+        mMasterMixer.renderAudio(static_cast<float *>(audioData), numFrames);// render audio
     } catch(const std::overflow_error& e){
         LOGE("%s",e.what());
     }
@@ -92,5 +108,9 @@ void AudioEngine::tapKick() {
 void AudioEngine::tapSteelDrum(double frequency) {
     mSteelDrum->setFrequency(frequency);
     mSteelDrum->tap();
+}
+
+void AudioEngine::setOutputPort(AMidiOutputPort *outputPort) {
+    mOutputPort = outputPort;
 }
 

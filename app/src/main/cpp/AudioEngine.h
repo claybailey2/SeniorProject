@@ -8,6 +8,8 @@
 // AudioEngine.h
 
 #include <oboe/Oboe.h>
+#include <amidi/AMidi.h>
+
 #include "Constants.h"
 #include "SinOsc.h"
 #include "SquareOsc.h"
@@ -18,6 +20,8 @@
 #include "KickDrum.h"
 #include "SteelDrum.h"
 
+constexpr int SIZE_MIDIBUFFER = 1024; //TODO: Figure out how big the midi buffer should be;
+
 using namespace oboe;
 //AudioEngine inherits from AudioStreamCallback
 class AudioEngine : public AudioStreamCallback {
@@ -27,6 +31,7 @@ public:
     void start();
     void pause();
     void resume();
+    void setOutputPort(AMidiOutputPort *outputPort);
 
     DataCallbackResult
     onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) override;
@@ -37,6 +42,7 @@ public:
     void tapSteelDrum(double frequency);
 
 private:
+    AMidiOutputPort  *mOutputPort;
     Mixer mMasterMixer;
     bool mIsInPause = false;
     AudioStream *mStream = nullptr;
