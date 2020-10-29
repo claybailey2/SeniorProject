@@ -51,8 +51,12 @@ void AudioEngine::pause() {
 
 void AudioEngine::resume() {
     mIsInPause = false;
-
-    mStream->flush();
+    if(mStream->getState() == oboe::StreamState::Paused ||
+        mStream->getState() == oboe::StreamState::Open ||
+        mStream->getState() == oboe::StreamState::Stopped)
+    {
+        mStream->flush();
+    }
     mStream->start();
 }
 
@@ -71,7 +75,7 @@ void AudioEngine::resume() {
  */
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    //LOGD("Audio Ready");
+    LOGD("Audio Ready");
     if (mIsInPause) return  DataCallbackResult::Stop; //stop audio when app is out of focus
 
     if (mKick == nullptr || mSteelDrum == nullptr) {//ensure synths are created
@@ -89,7 +93,7 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
                                           sizeof(inDataBuffer), &numBytesReceived, &timestamp);
     if (numMessages >= 0 && opCode == AMIDI_OPCODE_DATA) {
         // Parse and respond to MIDI data
-        // ...
+        tapSteelDrum(700);
     }
 
     try {

@@ -29,17 +29,22 @@ public class MainActivity extends AppCompatActivity
      * which is packaged with this application.
      */
     private static long mEngineHandle = 0;
-    private native long startEngine();
+    private native long createEngine();
+    private native void startEngine(long engineHandle);
     private native void stopEngine(long engineHandle);
     private native void resumeEngine(long engineHandle);
     private native void tapKick(long engineHandle);
     private native void tapSteelDrum(long engineHandle, double frequency);
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
     private native void startNativeMidi(MidiDevice appMidiDevice, long mEngineHandle);
+    private native void nativeSend(byte[] msgBuff, int offset, int numBytes);
 
     private double kSteelDrumFreq1 = 260;
     private double kSteelDrumFreq2 = 330;
     private double kSteelDrumFreq3 = 392;
+
+    private MidiDevice mAppMidiDevice;
+    //private MidiInputPort mInputPort;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -52,14 +57,19 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
-        mEngineHandle = startEngine();
 
-        //Configure app to hardware-specific audio output settings
-        setDefaultStreamValues(this);
+        //allocate new Audio engine
+        mEngineHandle = createEngine();
 
+        //initialize midi
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
             setupMidi();
         }
+
+        //Configure app to hardware-specific audio output settings
+        setDefaultStreamValues(this);
+        //start audio
+        startEngine(mEngineHandle);
     }
 
     @Override
@@ -77,6 +87,16 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.button_steel_drum_3:
                 tapSteelDrum(mEngineHandle, kSteelDrumFreq3);
+                break;
+            case R.id.button_noteOn:
+                byte[] buffer = new byte[32];
+                int numBytes = 0;
+                int channel = 0;
+                buffer[numBytes++] = (byte)(0x90 + channel); // note on
+                buffer[numBytes++] = (byte)60; // pitch is middle C
+                buffer[numBytes++] = (byte)127; // max velocity
+                int offset = 0;
+                nativeSend(buffer, offset, buffer.length);
                 break;
         }
     }
@@ -118,18 +138,21 @@ public class MainActivity extends AppCompatActivity
         MidiManager midiManager = (MidiManager) getSystemService(MIDI_SERVICE);
         final MidiDeviceInfo appMidiDeviceInfo = findDevice(midiManager, "blog.claybailey",
                 "AppMidiDeviceService");
-        int portIndex = 0;
+        final int portIndex = 0;
 
         midiManager.openDevice(appMidiDeviceInfo,
                 new MidiManager.OnDeviceOpenedListener() {
 
                     @Override
                     public void onDeviceOpened(MidiDevice appMidiDevice) {
-                        startNativeMidi(appMidiDevice, mEngineHandle);
+                        mAppMidiDevice = appMidiDevice;
+                        //mInputPort = mAppMidiDevice.openInputPort(portIndex);
+                       startNativeMidi(mAppMidiDevice, mEngineHandle);
                     }
                 }, null);
     }
 
+    //Identifies the MidiDeviceService. Code block from android.media.midi code sample, "midi-synth"
     @RequiresApi(api = Build.VERSION_CODES.M)
     public static MidiDeviceInfo findDevice(MidiManager midiManager,
                                             String manufacturer, String product) {

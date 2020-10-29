@@ -5,7 +5,8 @@ project(SeniorProject)
 
 #locate amidi api in ndk
 set(ANDROID_NDK /Users/claybailey/Library/Android/sdk/ndk/21.3.6528147/) # set to local NDK
-find_library(amidi-lib amidi REQUIRED)
+find_library(amidi REQUIRED)
+find_library(log REQUIRED)
 
 #get oboe from repository
 find_package (oboe REQUIRED CONFIG)
@@ -15,7 +16,7 @@ add_library(native-lib SHARED
         AudioEngine.cpp
         )
 
-target_link_libraries(native-lib oboe::oboe amidi-lib)
+target_link_libraries(native-lib oboe::oboe amidi log)
 
 target_compile_options(native-lib
         PRIVATE

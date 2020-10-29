@@ -42,7 +42,7 @@ public:
     void tapSteelDrum(double frequency);
 
 private:
-    AMidiOutputPort  *mOutputPort;
+    AMidiOutputPort  *mOutputPort = nullptr;
     Mixer mMasterMixer;
     bool mIsInPause = false;
     AudioStream *mStream = nullptr;

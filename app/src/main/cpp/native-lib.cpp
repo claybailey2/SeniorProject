@@ -8,12 +8,17 @@
  */
 
 extern "C" {
-//Start AudioEngine
+//Allocate AudioEngine
 JNIEXPORT jlong JNICALL
-Java_blog_claybailey_seniorproject_MainActivity_startEngine(JNIEnv *env, jobject thiz) {
-    auto engine = new AudioEngine();
+Java_blog_claybailey_seniorproject_MainActivity_createEngine(JNIEnv *env, jobject thiz) {
+    return reinterpret_cast<jlong>(new AudioEngine());
+}
+//Start AudioEngine
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_startEngine(JNIEnv *env, jobject thiz,
+                                                            jlong jEngineHandle) {
+    auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
     engine->start();
-    return reinterpret_cast<jlong>(engine);
 }
 
 JNIEXPORT void JNICALL
@@ -82,8 +87,17 @@ Java_blog_claybailey_seniorproject_MainActivity_startNativeMidi(JNIEnv *env, job
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_AppMidiDeviceService_writeMidi(JNIEnv *env, jobject thiz,
                                                                   jbyteArray data, jint length) {
-    jbyte* bufferPtr = env->GetByteArrayElements(data, NULL);
-    AMidiInputPort_send(sNativeInputPort, (uint8_t*)bufferPtr, length);
+    jbyte *bufferPtr = env->GetByteArrayElements(data, NULL);
+    AMidiInputPort_send(sNativeInputPort, (uint8_t *) bufferPtr, length);
     env->ReleaseByteArrayElements(data, bufferPtr, JNI_ABORT);
+}
+
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_nativeSend(JNIEnv *env, jobject thiz,
+                                                           jbyteArray msg_buff, jint offset,
+                                                           jint num_bytes) {
+    jbyte *bufferPtr = env->GetByteArrayElements(msg_buff, NULL);
+    AMidiInputPort_send(sNativeInputPort, (uint8_t *) bufferPtr, num_bytes);
+    env->ReleaseByteArrayElements(msg_buff, bufferPtr, JNI_ABORT);
 }
 }
