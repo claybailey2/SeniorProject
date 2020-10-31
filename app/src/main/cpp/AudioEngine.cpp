@@ -100,9 +100,11 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
     }
     if (numMessages > 0) {
         LOGD("Data received!");
-
+        LOGD("{ %d %d %d }", inDataBuffer[0], inDataBuffer[1], inDataBuffer[2]);
+        double frequency = midiToFreq(inDataBuffer[1]);
+        LOGD("Frequency: %f", frequency);
         // Parse and respond to MIDI data
-        tapSteelDrum(700);
+        tapSteelDrum(frequency);
     }
 
     try {

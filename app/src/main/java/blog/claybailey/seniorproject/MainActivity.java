@@ -37,15 +37,16 @@ public class MainActivity extends AppCompatActivity
     private native void tapKick(long engineHandle);
     private native void tapSteelDrum(long engineHandle, double frequency);
     private static native void native_setDefaultStreamValues(int sampleRate, int framesPerBurst);
-    private native void startNativeMidi(MidiDevice appMidiDevice, long mEngineHandle);
+    private native void startNativeMidi(MidiDevice appMidiDevice, long engineHandle, long composerHandle);
     private native void nativeSend(byte[] msgBuff, int offset, int numBytes);
 
     private double kSteelDrumFreq1 = 260;
     private double kSteelDrumFreq2 = 330;
     private double kSteelDrumFreq3 = 392;
 
-    private MidiDevice mAppMidiDevice;
-    //private MidiInputPort mInputPort;
+    private static long mComposerHandle = 0;
+    private native long createComposer();
+    private native void autoPlay(long composerHandle);
 
     private static final String TAG = "MainActivity";
 
@@ -65,6 +66,7 @@ public class MainActivity extends AppCompatActivity
 
         //allocate new Audio engine
         mEngineHandle = createEngine();
+        mComposerHandle = createComposer();
 
         //initialize midi
         if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
@@ -105,6 +107,8 @@ public class MainActivity extends AppCompatActivity
                 int offset = 0;
                 nativeSend(buffer, offset, buffer.length);
                 break;
+            case R.id.button_autoPlay:
+                autoPlay(mComposerHandle);
         }
     }
 
@@ -153,7 +157,7 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onDeviceOpened(MidiDevice appMidiDevice) {
-                        startNativeMidi(appMidiDevice, mEngineHandle);
+                        startNativeMidi(appMidiDevice, mEngineHandle, mComposerHandle);
                     }
                 }, null);
     }

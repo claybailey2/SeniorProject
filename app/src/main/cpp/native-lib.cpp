@@ -2,6 +2,7 @@
 #include <amidi/AMidi.h>
 
 #include "AudioEngine.h"
+#include "Composer.h"
 
 /*
  * JNI CODE LIVES HERE
@@ -75,12 +76,15 @@ static AMidiOutputPort *sNativeOutputPort;
 JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_startNativeMidi(JNIEnv *env, jobject thiz,
                                                                 jobject app_midi_device,
-                                                                jlong jEngineHandle) {
+                                                                jlong jEngineHandle,
+                                                                jlong jComposerHandle) {
     auto engine = reinterpret_cast<AudioEngine *>(jEngineHandle);
+    auto composer = reinterpret_cast<Composer *>(jComposerHandle);
     media_status_t status = AMidiDevice_fromJava(env, app_midi_device, &sNativeMidiDevice);
     status = AMidiInputPort_open(sNativeMidiDevice, 0, &sNativeInputPort);
     status = AMidiOutputPort_open(sNativeMidiDevice, 0, &sNativeOutputPort);
     engine->setOutputPort(sNativeOutputPort);
+    composer->setInputPort(sNativeInputPort);
 }
 
 //Write midi to native input port. Code block from Native Midi overview on Android Dev site.
@@ -93,5 +97,17 @@ Java_blog_claybailey_seniorproject_MainActivity_nativeSend(JNIEnv *env, jobject 
     AMidiInputPort_send(sNativeInputPort, (uint8_t *) bufferPtr, num_bytes);
     LOGD("Data sent!");
     env->ReleaseByteArrayElements(msg_buff, bufferPtr, JNI_ABORT);
+}
+
+JNIEXPORT jlong JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_createComposer(JNIEnv *env, jobject thiz) {
+    return reinterpret_cast<jlong>(new Composer());
+}
+
+JNIEXPORT void JNICALL
+Java_blog_claybailey_seniorproject_MainActivity_autoPlay(JNIEnv *env, jobject thiz,
+        jlong jComposerHandle) {
+    auto composer = reinterpret_cast<Composer *>(jComposerHandle);
+    composer->autoPlay(9);
 }
 }

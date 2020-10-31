@@ -41,6 +41,8 @@ public:
     void tapKick();
     void tapSteelDrum(double frequency);
 
+    double midiToFreq(uint8_t midiNote) { return 440.0 * pow(2.0, (midiNote - 69.0) / 12.0);}
+
 private:
     AMidiOutputPort  *mOutputPort = nullptr;
     Mixer mMasterMixer;
