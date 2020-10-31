@@ -22,7 +22,7 @@ void AudioEngine::start() {
     builder.setChannelCount(1);
     builder.setPerformanceMode(PerformanceMode::LowLatency);
     builder.setSharingMode(
-            SharingMode::Exclusive);//Do not mix audio with another app's (bypass mixer = lower latency)
+            SharingMode::Shared);//Do not mix audio with another app's (bypass mixer = lower latency)
     builder.setCallback(this);
 
     builder.openStream(&mStream);
@@ -32,13 +32,17 @@ void AudioEngine::start() {
 
     //interrogate audio device for minimum amount of data it will read in one operation (burst)
     //use two bursts to prevent underruns
-    mStream->setBufferSizeInFrames(mStream->getFramesPerBurst() * 2);
+    int32_t bufferSize = mStream->getFramesPerBurst() * 2;
+    mStream->setBufferSizeInFrames(bufferSize);
+    mStream->flush(0);
+    //mStream->write(,bufferSize,0);
 
     mKick = new KickDrum(50.0, 0.7, mStream->getSampleRate());
     mMasterMixer.addTrack(mKick);
 
     mSteelDrum = new SteelDrum(440.0, 0.3, mStream->getSampleRate());
     mMasterMixer.addTrack(mSteelDrum);
+
 
     mStream->requestStart();
     LOGD("Engine Started");
@@ -75,7 +79,7 @@ void AudioEngine::resume() {
  */
 DataCallbackResult
 AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    LOGD("Audio Ready");
+    //LOGD("Audio Ready");
     if (mIsInPause) return  DataCallbackResult::Stop; //stop audio when app is out of focus
 
     if (mKick == nullptr || mSteelDrum == nullptr) {//ensure synths are created
@@ -91,7 +95,12 @@ AudioEngine::onAudioReady(AudioStream *oboeStream, void *audioData, int32_t numF
     // Read MIDI Data
     numMessages = AMidiOutputPort_receive(mOutputPort, &opCode, inDataBuffer,
                                           sizeof(inDataBuffer), &numBytesReceived, &timestamp);
-    if (numMessages >= 0 && opCode == AMIDI_OPCODE_DATA) {
+    if (numMessages < 0) {
+        LOGW("Failure receiving MIDI data %zd", numMessages);
+    }
+    if (numMessages > 0) {
+        LOGD("Data received!");
+
         // Parse and respond to MIDI data
         tapSteelDrum(700);
     }
@@ -110,6 +119,7 @@ void AudioEngine::tapKick() {
 }
 
 void AudioEngine::tapSteelDrum(double frequency) {
+    LOGD("Tap steel drum");
     mSteelDrum->setFrequency(frequency);
     mSteelDrum->tap();
 }

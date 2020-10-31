@@ -85,19 +85,13 @@ Java_blog_claybailey_seniorproject_MainActivity_startNativeMidi(JNIEnv *env, job
 
 //Write midi to native input port. Code block from Native Midi overview on Android Dev site.
 JNIEXPORT void JNICALL
-Java_blog_claybailey_seniorproject_AppMidiDeviceService_writeMidi(JNIEnv *env, jobject thiz,
-                                                                  jbyteArray data, jint length) {
-    jbyte *bufferPtr = env->GetByteArrayElements(data, NULL);
-    AMidiInputPort_send(sNativeInputPort, (uint8_t *) bufferPtr, length);
-    env->ReleaseByteArrayElements(data, bufferPtr, JNI_ABORT);
-}
-
-JNIEXPORT void JNICALL
 Java_blog_claybailey_seniorproject_MainActivity_nativeSend(JNIEnv *env, jobject thiz,
                                                            jbyteArray msg_buff, jint offset,
                                                            jint num_bytes) {
+    LOGD("Data passed to JNI!");
     jbyte *bufferPtr = env->GetByteArrayElements(msg_buff, NULL);
     AMidiInputPort_send(sNativeInputPort, (uint8_t *) bufferPtr, num_bytes);
+    LOGD("Data sent!");
     env->ReleaseByteArrayElements(msg_buff, bufferPtr, JNI_ABORT);
 }
 }

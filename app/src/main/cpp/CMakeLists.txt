@@ -14,6 +14,7 @@ find_package (oboe REQUIRED CONFIG)
 add_library(native-lib SHARED
         native-lib.cpp
         AudioEngine.cpp
+        Composer.cpp
         )
 
 target_link_libraries(native-lib oboe::oboe amidi log)

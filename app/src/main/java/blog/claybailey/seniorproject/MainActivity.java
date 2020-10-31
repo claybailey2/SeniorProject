@@ -11,6 +11,7 @@ import android.media.midi.MidiDevice;
 import android.media.midi.MidiDeviceInfo;
 import android.media.midi.MidiInputPort;
 import android.media.midi.MidiManager;
+import android.media.midi.MidiOutputPort;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity
     private MidiDevice mAppMidiDevice;
     //private MidiInputPort mInputPort;
 
+    private static final String TAG = "MainActivity";
+
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
@@ -57,6 +60,8 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+
+        Log.d(TAG,"Create!");
 
         //allocate new Audio engine
         mEngineHandle = createEngine();
@@ -74,6 +79,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onClick(View v) {
+        Log.d(TAG,"Click!");
         int id = v.getId();
         switch (id) {
             case R.id.button_kick:
@@ -89,6 +95,7 @@ public class MainActivity extends AppCompatActivity
                 tapSteelDrum(mEngineHandle, kSteelDrumFreq3);
                 break;
             case R.id.button_noteOn:
+                Log.d(TAG,"Sending data!");
                 byte[] buffer = new byte[32];
                 int numBytes = 0;
                 int channel = 0;
@@ -104,6 +111,7 @@ public class MainActivity extends AppCompatActivity
     //Start the audio engine when app in focus
     @Override
     protected void onResume() {
+        Log.d(TAG,"Resume!");
         if (mEngineHandle != 0) resumeEngine(mEngineHandle);
         super.onResume();
     }
@@ -145,9 +153,7 @@ public class MainActivity extends AppCompatActivity
 
                     @Override
                     public void onDeviceOpened(MidiDevice appMidiDevice) {
-                        mAppMidiDevice = appMidiDevice;
-                        //mInputPort = mAppMidiDevice.openInputPort(portIndex);
-                       startNativeMidi(mAppMidiDevice, mEngineHandle);
+                        startNativeMidi(appMidiDevice, mEngineHandle);
                     }
                 }, null);
     }
